@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:file_picker/file_picker.dart'; // Jangan lupa tambah di pubspec.yaml
+import 'package:file_picker/file_picker.dart';
+import 'loginpage.dart'; // Pastikan import ini ada untuk pindah halaman
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -16,7 +17,6 @@ class _SignupPageState extends State<SignupPage> {
   String _fileName = "Belum ada file terpilih";
   PlatformFile? _pickedFile;
 
-  // Fungsi pilih file (SIM/KTP)
   Future<void> _pickFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
@@ -54,7 +54,7 @@ class _SignupPageState extends State<SignupPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC), // Background abu-abu sangat muda (Slate)
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
         title: const Text("Create Account", style: TextStyle(fontWeight: FontWeight.bold)),
         backgroundColor: Colors.transparent,
@@ -75,13 +75,11 @@ class _SignupPageState extends State<SignupPage> {
               const Text("Enter your details to start the journey", style: TextStyle(color: Colors.grey)),
               const SizedBox(height: 25),
 
-              // Form Pengisian
               _buildInputField("Full Name", Icons.person_outline),
               const SizedBox(height: 15),
               _buildInputField("Home Address", Icons.location_on_outlined),
               const SizedBox(height: 15),
               
-              // Input Umur dengan Validasi
               TextField(
                 controller: _ageController,
                 keyboardType: TextInputType.number,
@@ -98,7 +96,6 @@ class _SignupPageState extends State<SignupPage> {
               const Divider(height: 1, thickness: 1),
               const SizedBox(height: 30),
 
-              // Bagian Upload File SIM/KTP
               const Text(
                 "Identity Verification",
                 style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E3C72)),
@@ -107,9 +104,7 @@ class _SignupPageState extends State<SignupPage> {
               _buildUploadCard(),
 
               const SizedBox(height: 40),
-
-              // Tombol Submit
-              _buildSubmitButton(),
+              _buildSubmitButton(), // Memanggil tombol di sini
               const SizedBox(height: 30),
             ],
           ),
@@ -118,7 +113,6 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 
-  // Helper Dekorasi Input
   InputDecoration _inputDecoration(String label, IconData icon, {String? error}) {
     return InputDecoration(
       labelText: label,
@@ -134,14 +128,6 @@ class _SignupPageState extends State<SignupPage> {
         borderRadius: BorderRadius.circular(15),
         borderSide: const BorderSide(color: Color(0xFF1E3C72), width: 1.5),
       ),
-      errorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(15),
-        borderSide: const BorderSide(color: Colors.redAccent),
-      ),
-      focusedErrorBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(15),
-        borderSide: const BorderSide(color: Colors.redAccent, width: 1.5),
-      ),
     );
   }
 
@@ -152,7 +138,6 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 
-  // Desain Kartu Upload File yang Diperbagus
   Widget _buildUploadCard() {
     return Container(
       width: double.infinity,
@@ -162,7 +147,6 @@ class _SignupPageState extends State<SignupPage> {
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
           color: _pickedFile != null ? Colors.green.shade300 : Colors.grey.shade200,
-          style: _pickedFile != null ? BorderStyle.solid : BorderStyle.solid,
         ),
       ),
       child: Column(
@@ -173,28 +157,18 @@ class _SignupPageState extends State<SignupPage> {
             color: _pickedFile != null ? Colors.green : const Color(0xFF1E3C72),
           ),
           const SizedBox(height: 10),
-          Text(
-            _pickedFile != null ? "Document Attached" : "Upload SIM or KTP",
-            style: const TextStyle(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 4),
-          Text(_fileName, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+          Text(_fileName),
           const SizedBox(height: 15),
-          OutlinedButton.icon(
+          OutlinedButton(
             onPressed: _pickFile,
-            icon: const Icon(Icons.file_upload_outlined),
-            label: Text(_pickedFile != null ? "Change File" : "Choose File"),
-            style: OutlinedButton.styleFrom(
-              foregroundColor: const Color(0xFF1E3C72),
-              side: const BorderSide(color: Color(0xFF1E3C72)),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
+            child: const Text("Choose File"),
           )
         ],
       ),
     );
   }
 
+  // Bagian tombol yang tadinya eror, sekarang masuk di dalam class
   Widget _buildSubmitButton() {
     bool isFormValid = !_isUnderage && _pickedFile != null && _ageController.text.isNotEmpty;
 
@@ -203,13 +177,18 @@ class _SignupPageState extends State<SignupPage> {
       height: 60,
       child: ElevatedButton(
         onPressed: isFormValid ? () {
-          // Aksi Daftar
+          // Navigasi ke LoginPage
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text("Registrasi Berhasil!")),
+          );
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const LoginPage()),
+          );
         } : null,
         style: ElevatedButton.styleFrom(
           backgroundColor: const Color(0xFF1E3C72),
-          disabledBackgroundColor: Colors.grey.shade300,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-          elevation: isFormValid ? 5 : 0,
         ),
         child: const Text(
           "Complete Registration",
