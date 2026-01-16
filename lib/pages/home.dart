@@ -11,7 +11,7 @@ class _HomePageState extends State<HomePage> {
   // Brand yang sedang terpilih (default: Toyota)
   String selectedBrand = "Toyota";
 
-  // Data Mobil khusus Toyota sesuai permintaan Anda
+  // Data Mobil Toyota
   final List<Map<String, String>> toyotaCars = [
     {"name": "Rush 2023", "type": "SUV", "rating": "4.8", "price": "Rp 600rb/hari"},
     {"name": "Fortuner 2022", "type": "SUV", "rating": "4.9", "price": "Rp 1.2jt/hari"},
@@ -20,6 +20,20 @@ class _HomePageState extends State<HomePage> {
     {"name": "Avanza 2015", "type": "MPV", "rating": "4.6", "price": "Rp 300rb/hari"},
     {"name": "Innova 2021", "type": "MPV", "rating": "4.8", "price": "Rp 750rb/hari"},
     {"name": "Yaris 2029", "type": "Hatchback", "rating": "4.9", "price": "Rp 550rb/hari"},
+  ];
+
+  // --- DATA BARU: Data Mobil Honda ---
+  final List<Map<String, String>> hondaCars = [
+    {"name": "Brio 2015", "type": "City Car", "rating": "4.5", "price": "Rp 300rb/hari"},
+    {"name": "Jazz 2019", "type": "Hatchback", "rating": "4.7", "price": "Rp 450rb/hari"},
+    {"name": "Honda Civic 2014", "type": "Sedan", "rating": "4.6", "price": "Rp 500rb/hari"},
+    {"name": "Honda Civic Type R 2023", "type": "Sport", "rating": "5.0", "price": "Rp 2.5jt/hari"},
+    {"name": "Honda WR-V 2018", "type": "SUV", "rating": "4.5", "price": "Rp 450rb/hari"},
+    {"name": "Honda BR-V 2022", "type": "SUV", "rating": "4.7", "price": "Rp 550rb/hari"},
+    {"name": "Honda HR-V 2023", "type": "SUV", "rating": "4.8", "price": "Rp 700rb/hari"},
+    {"name": "Honda CR-V 2022", "type": "SUV", "rating": "4.8", "price": "Rp 900rb/hari"},
+    {"name": "Honda Civic Hybrid 2024", "type": "Hybrid", "rating": "4.9", "price": "Rp 1.1jt/hari"},
+    {"name": "Honda NSX 2025", "type": "Supercar", "rating": "5.0", "price": "Rp 10jt/hari"},
   ];
 
   @override
@@ -79,7 +93,7 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 15),
 
-            // --- Kategori Brand (Klik Toyota untuk lihat hasil) ---
+            // --- Kategori Brand ---
             SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               padding: const EdgeInsets.only(left: 20, bottom: 10),
@@ -106,13 +120,18 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
 
-            // --- Car List (Akan berubah datanya jika selectedBrand == Toyota) ---
+            // --- LOGIKA PERUBAHAN LIST MOBIL ---
+            // Jika Toyota -> tampilkan list Toyota
+            // Jika Honda -> tampilkan list Honda
+            // Selain itu -> tampilkan pesan placeholder
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
               child: Column(
                 children: selectedBrand == "Toyota" 
                   ? toyotaCars.map((car) => _buildCarCard(car['name']!, car['type']!, car['rating']!, car['price']!)).toList()
-                  : [const Center(child: Text("Pilih Toyota untuk melihat daftar mobil"))],
+                  : selectedBrand == "Honda"
+                      ? hondaCars.map((car) => _buildCarCard(car['name']!, car['type']!, car['rating']!, car['price']!)).toList()
+                      : [const Center(child: Padding(padding: EdgeInsets.all(20), child: Text("Data mobil untuk brand ini belum tersedia")))],
               ),
             ),
           ],
@@ -197,7 +216,7 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Widget Brand Icon yang bisa diklik
+  // Widget Brand Icon
   Widget _buildBrandIcon(String label, String imageUrl) {
     bool isSelected = selectedBrand == label;
     return GestureDetector(
