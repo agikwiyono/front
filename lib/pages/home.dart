@@ -8,214 +8,157 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // Brand yang sedang terpilih (default: Toyota)
+  // --- 1. KONFIGURASI & STATE ---
+  final Color primaryColor = const Color(0xFF1E3C72);
   String selectedBrand = "Toyota";
 
-  // Data Mobil Toyota
+  // --- DATA BRAND & LOGO (PERBAIKAN GAMBAR) ---
+  // Kita buat list data agar tidak perlu menulis ulang widget brand satu per satu
+  final List<Map<String, String>> brandData = [
+    {
+      "name": "Toyota",
+      "image": "https://logos-download.com/wp-content/uploads/2016/05/Toyota_logo_logotype.png"
+    },
+    {
+      "name": "Honda",
+      "image": "https://logos-download.com/wp-content/uploads/2016/05/Honda_logo_logotype.png"
+    },
+    {
+      "name": "Mitsubishi",
+      "image": "https://logos-download.com/wp-content/uploads/2016/10/Mitsubishi_logo.png"
+    },
+    {
+      "name": "Suzuki",
+      "image": "https://logos-download.com/wp-content/uploads/2016/05/Suzuki_logo_logotype.png"
+    },
+    {
+      "name": "Hyundai",
+      "image": "https://logos-download.com/wp-content/uploads/2016/10/Hyundai_logo_logotype.png"
+    },
+  ];
+
+  // --- 2. DATA MOBIL ---
   final List<Map<String, String>> toyotaCars = [
     {"name": "Rush 2023", "type": "SUV", "rating": "4.8", "price": "Rp 600rb/hari"},
     {"name": "Fortuner 2022", "type": "SUV", "rating": "4.9", "price": "Rp 1.2jt/hari"},
     {"name": "Corolla Cross 2024", "type": "Hybrid", "rating": "5.0", "price": "Rp 900rb/hari"},
-    {"name": "Calya 2018", "type": "MPV", "rating": "4.5", "price": "Rp 350rb/hari"},
     {"name": "Avanza 2015", "type": "MPV", "rating": "4.6", "price": "Rp 300rb/hari"},
     {"name": "Innova 2021", "type": "MPV", "rating": "4.8", "price": "Rp 750rb/hari"},
-    {"name": "Yaris 2023", "type": "Hatchback", "rating": "4.9", "price": "Rp 550rb/hari"},
   ];
 
-  // --- DATA MOBIL HONDA ---
   final List<Map<String, String>> hondaCars = [
     {"name": "Brio 2015", "type": "City Car", "rating": "4.5", "price": "Rp 300rb/hari"},
     {"name": "Jazz 2019", "type": "Hatchback", "rating": "4.7", "price": "Rp 450rb/hari"},
-    {"name": "Honda Civic 2014", "type": "Sedan", "rating": "4.6", "price": "Rp 500rb/hari"},
-    {"name": "Honda Civic Type R 2023", "type": "Sport", "rating": "5.0", "price": "Rp 2.5jt/hari"},
-    {"name": "Honda WR-V 2018", "type": "SUV", "rating": "4.5", "price": "Rp 450rb/hari"},
-    {"name": "Honda BR-V 2022", "type": "SUV", "rating": "4.7", "price": "Rp 550rb/hari"},
-    {"name": "Honda HR-V 2023", "type": "SUV", "rating": "4.8", "price": "Rp 700rb/hari"},
-    {"name": "Honda CR-V 2022", "type": "SUV", "rating": "4.8", "price": "Rp 900rb/hari"},
-    {"name": "Honda Civic Hybrid 2024", "type": "Hybrid", "rating": "4.9", "price": "Rp 1.1jt/hari"},
-    {"name": "Honda NSX 2025", "type": "Supercar", "rating": "5.0", "price": "Rp 10jt/hari"},
+    {"name": "Civic Type R 2023", "type": "Sport", "rating": "5.0", "price": "Rp 2.5jt/hari"},
+    {"name": "HR-V 2023", "type": "SUV", "rating": "4.8", "price": "Rp 700rb/hari"},
+    {"name": "CR-V 2022", "type": "SUV", "rating": "4.8", "price": "Rp 900rb/hari"},
   ];
 
-  // --- DATA MOBIL MITSUBISHI ---
   final List<Map<String, String>> mitsubishiCars = [
-    {"name": "Lancer 2016", "type": "Sedan", "rating": "4.6", "price": "Rp 500rb/hari"},
     {"name": "Pajero Sport 2019", "type": "SUV", "rating": "4.8", "price": "Rp 1jt/hari"},
-    {"name": "Outlander 2020", "type": "SUV", "rating": "4.7", "price": "Rp 800rb/hari"},
     {"name": "Xpander 2021", "type": "MPV", "rating": "4.7", "price": "Rp 450rb/hari"},
-    {"name": "Xpander Cross 2022", "type": "SUV", "rating": "4.8", "price": "Rp 550rb/hari"},
     {"name": "Outlander PHEV 2023", "type": "Hybrid", "rating": "4.9", "price": "Rp 1.2jt/hari"},
   ];
 
-  // --- DATA MOBIL SUZUKI ---
   final List<Map<String, String>> suzukiCars = [
-    {"name": "S-Presso 2015", "type": "City Car", "rating": "4.4", "price": "Rp 250rb/hari"},
-    {"name": "Ignis 2016", "type": "City Car", "rating": "4.6", "price": "Rp 300rb/hari"},
-    {"name": "Ciaz 2018", "type": "Sedan", "rating": "4.5", "price": "Rp 400rb/hari"},
     {"name": "Ertiga 2016", "type": "MPV", "rating": "4.7", "price": "Rp 450rb/hari"},
-    {"name": "Ertiga Hybrid 2022", "type": "Hybrid", "rating": "4.8", "price": "Rp 600rb/hari"},
-    {"name": "Carry Pick Up 2018", "type": "Pickup", "rating": "4.3", "price": "Rp 300rb/hari"},
     {"name": "Jimny 2023", "type": "SUV", "rating": "4.9", "price": "Rp 800rb/hari"},
+    {"name": "Ignis 2016", "type": "City Car", "rating": "4.6", "price": "Rp 300rb/hari"},
   ];
 
-  // --- DATA BARU: Data Mobil HYUNDAI ---
   final List<Map<String, String>> hyundaiCars = [
-    {"name": "Hyundai Creta 2023", "type": "SUV", "rating": "4.7", "price": "Rp 650rb/hari"},
-    {"name": "Hyundai Stargazer 2023", "type": "MPV", "rating": "4.6", "price": "Rp 550rb/hari"},
-    {"name": "Santa Fe 2022", "type": "SUV", "rating": "4.8", "price": "Rp 1.2jt/hari"},
+    {"name": "Creta 2023", "type": "SUV", "rating": "4.7", "price": "Rp 650rb/hari"},
+    {"name": "Stargazer 2023", "type": "MPV", "rating": "4.6", "price": "Rp 550rb/hari"},
     {"name": "Ioniq 5 2023", "type": "Electric", "rating": "4.9", "price": "Rp 1.5jt/hari"},
-    {"name": "Grand i10 2020", "type": "City Car", "rating": "4.5", "price": "Rp 350rb/hari"},
-    {"name": "Tucson 2021", "type": "SUV", "rating": "4.7", "price": "Rp 900rb/hari"},
-    {"name": "H-1 2019", "type": "MPV", "rating": "4.6", "price": "Rp 800rb/hari"},
+    {"name": "Santa Fe 2022", "type": "SUV", "rating": "4.8", "price": "Rp 1.2jt/hari"},
   ];
+
+  // Logic Helper untuk memilih list mobil
+  List<Map<String, String>> get activeCars {
+    switch (selectedBrand) {
+      case "Toyota": return toyotaCars;
+      case "Honda": return hondaCars;
+      case "Mitsubishi": return mitsubishiCars;
+      case "Suzuki": return suzukiCars;
+      case "Hyundai": return hyundaiCars;
+      default: return [];
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        centerTitle: false,
-        leading: IconButton(
-          icon: const Icon(Icons.notes_rounded, color: Colors.black, size: 28),
-          onPressed: () {},
-        ),
-        actions: const [
-          Padding(
-            padding: EdgeInsets.only(right: 15),
-            child: CircleAvatar(
-              radius: 20,
-              backgroundColor: Color(0xFF1E3C72),
-              child: CircleAvatar(
-                radius: 18,
-                backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=32'),
-              ),
-            ),
-          ),
-        ],
-        title: const Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text("Lokasi Anda", style: TextStyle(color: Colors.grey, fontSize: 12)),
-            Row(
-              children: [
-                Icon(Icons.location_on, color: Colors.red, size: 14),
-                Text(" Jakarta, Indonesia", 
-                    style: TextStyle(color: Colors.black, fontSize: 14, fontWeight: FontWeight.bold)),
-              ],
-            ),
-          ],
-        ),
-      ),
+      appBar: _buildAppBar(),
       body: SingleChildScrollView(
-        physics: const BouncingScrollPhysics(),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // --- Search Section ---
-            _buildSearchSection(),
-
-            // --- Banner Promo ---
-            _buildPromoBanner(),
-
+            _buildSearch(),
+            _buildPromo(),
             const SizedBox(height: 30),
-            const Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Text("Cari Berdasarkan Brand", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-            ),
-            const SizedBox(height: 15),
-
-            // --- Kategori Brand ---
-            SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              padding: const EdgeInsets.only(left: 20, bottom: 10),
-              child: Row(
-                children: [
-                  _buildBrandIcon("Toyota", "https://www.carlogos.org/car-logos/toyota-logo-2020-640.png"),
-                  _buildBrandIcon("Honda", "https://www.carlogos.org/car-logos/honda-logo-1700x1150.png"),
-                  _buildBrandIcon("Mitsubishi", "https://www.carlogos.org/car-logos/mitsubishi-logo-2100x1900.png"),
-                  _buildBrandIcon("Suzuki", "https://www.carlogos.org/car-logos/suzuki-logo-1800x1800.png"),
-                  // Ikon Hyundai sudah ada di kode asli
-                  _buildBrandIcon("Hyundai", "https://www.carlogos.org/car-logos/hyundai-logo-1900x950.png"),
-                ],
-              ),
-            ),
-
+            _buildBrandSelector(), // Memanggil brand selector
             const SizedBox(height: 20),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text("Mobil $selectedBrand Populer", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-                  TextButton(onPressed: () {}, child: const Text("Lihat Semua")),
-                ],
-              ),
-            ),
-
-            // --- LOGIKA PERUBAHAN LIST MOBIL ---
-            // Termasuk logic untuk Hyundai
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                children: selectedBrand == "Toyota" 
-                  ? toyotaCars.map((car) => _buildCarCard(car['name']!, car['type']!, car['rating']!, car['price']!)).toList()
-                  : selectedBrand == "Honda"
-                      ? hondaCars.map((car) => _buildCarCard(car['name']!, car['type']!, car['rating']!, car['price']!)).toList()
-                      : selectedBrand == "Mitsubishi"
-                          ? mitsubishiCars.map((car) => _buildCarCard(car['name']!, car['type']!, car['rating']!, car['price']!)).toList()
-                          : selectedBrand == "Suzuki"
-                              ? suzukiCars.map((car) => _buildCarCard(car['name']!, car['type']!, car['rating']!, car['price']!)).toList()
-                              : selectedBrand == "Hyundai" // LOGIKA BARU UNTUK HYUNDAI
-                                  ? hyundaiCars.map((car) => _buildCarCard(car['name']!, car['type']!, car['rating']!, car['price']!)).toList()
-                                  : [const Center(child: Padding(padding: EdgeInsets.all(20), child: Text("Data mobil untuk brand ini belum tersedia")))],
-              ),
-            ),
+            _buildCarListTitle(),
+            _buildCarList(),
           ],
         ),
       ),
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 0,
-        selectedItemColor: const Color(0xFF1E3C72),
-        unselectedItemColor: Colors.grey,
-        type: BottomNavigationBarType.fixed,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: "Home"),
-          BottomNavigationBarItem(icon: Icon(Icons.assignment), label: "Sewa"),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Favorit"),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profil"),
-        ],
-      ),
+      bottomNavigationBar: _buildBottomNav(),
     );
   }
 
-  // Widget Bagian Pencarian
-  Widget _buildSearchSection() {
+  // --- UI COMPONENTS ---
+
+  AppBar _buildAppBar() {
+    return AppBar(
+      backgroundColor: Colors.white,
+      elevation: 0,
+      leading: IconButton(icon: const Icon(Icons.menu, color: Colors.black), onPressed: () {}),
+      title: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text("Lokasi", style: TextStyle(color: Colors.grey, fontSize: 12)),
+          Row(
+            children: [
+              const Icon(Icons.location_on, color: Colors.red, size: 16),
+              const SizedBox(width: 4),
+              Text(" Jakarta, ID", style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold)),
+            ],
+          ),
+        ],
+      ),
+      actions: [
+        Padding(
+          padding: const EdgeInsets.only(right: 15),
+          child: CircleAvatar(
+            backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=32'),
+          ),
+        )
+      ],
+    );
+  }
+
+  Widget _buildSearch() {
     return Padding(
-      padding: const EdgeInsets.all(20.0),
+      padding: const EdgeInsets.all(20),
       child: Row(
         children: [
           Expanded(
-            child: Container(
-              decoration: BoxDecoration(
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5))],
-              ),
-              child: TextField(
-                decoration: InputDecoration(
-                  hintText: "Cari mobil impian...",
-                  prefixIcon: const Icon(Icons.search, color: Color(0xFF1E3C72)),
-                  filled: true,
-                  fillColor: Colors.white,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 0),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
-                ),
+            child: TextField(
+              decoration: InputDecoration(
+                hintText: "Cari mobil...",
+                prefixIcon: Icon(Icons.search, color: primaryColor),
+                filled: true,
+                fillColor: Colors.white,
+                border: OutlineInputBorder(borderRadius: BorderRadius.circular(15), borderSide: BorderSide.none),
               ),
             ),
           ),
           const SizedBox(width: 10),
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(color: const Color(0xFF1E3C72), borderRadius: BorderRadius.circular(15)),
+            decoration: BoxDecoration(color: primaryColor, borderRadius: BorderRadius.circular(15)),
             child: const Icon(Icons.tune, color: Colors.white),
           )
         ],
@@ -223,16 +166,14 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // Widget Banner Promo
-  Widget _buildPromoBanner() {
+  Widget _buildPromo() {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 20),
       child: Container(
-        width: double.infinity,
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          gradient: const LinearGradient(colors: [Color(0xFF1E3C72), Color(0xFF2A5298)]),
-          borderRadius: BorderRadius.circular(25),
+          gradient: LinearGradient(colors: [primaryColor, primaryColor.withOpacity(0.7)]),
+          borderRadius: BorderRadius.circular(20),
         ),
         child: const Row(
           children: [
@@ -240,69 +181,118 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text("Limited Offer", style: TextStyle(color: Colors.white70, fontSize: 12)),
-                  SizedBox(height: 10),
-                  Text("Diskon 20%\nKhusus Pengguna Baru", style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold, height: 1.2)),
+                  Text("Promo Mahasiswa", style: TextStyle(color: Colors.white70)),
+                  SizedBox(height: 5),
+                  Text("Diskon 20%\nSewa Mobil", style: TextStyle(color: Colors.white, fontSize: 20, fontWeight: FontWeight.bold)),
                 ],
               ),
             ),
-            Icon(Icons.directions_car_filled, color: Colors.white30, size: 60),
+            Icon(Icons.directions_car, color: Colors.white30, size: 50),
           ],
         ),
       ),
     );
   }
 
-  // Widget Brand Icon
-  Widget _buildBrandIcon(String label, String imageUrl) {
-    bool isSelected = selectedBrand == label;
+  // --- BAGIAN YANG DIPERBAIKI (BRAND SELECTOR) ---
+  Widget _buildBrandSelector() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Padding(
+          padding: EdgeInsets.symmetric(horizontal: 20),
+          child: Text("Pilih Brand", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        ),
+        const SizedBox(height: 15),
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.symmetric(horizontal: 20),
+          // Kita menggunakan 'map' untuk me-looping data brandData
+          // Ini jauh lebih efisien daripada menulis widget manual 5 kali
+          child: Row(
+            children: brandData.map((brand) {
+              return _buildBrandChip(brand['name']!, brand['image']!);
+            }).toList(),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBrandChip(String label, String imageUrl) {
+    bool isActive = selectedBrand == label;
     return GestureDetector(
-      onTap: () {
-        setState(() {
-          selectedBrand = label;
-        });
-      },
+      onTap: () => setState(() => selectedBrand = label),
       child: Container(
         margin: const EdgeInsets.only(right: 15),
         child: Column(
           children: [
             Container(
-              width: 70,
-              height: 70,
-              padding: const EdgeInsets.all(12),
+              width: 60,  // Ukuran diperbesar sedikit agar logo terlihat jelas
+              height: 60,
+              padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: isSelected ? const Color(0xFF1E3C72).withOpacity(0.1) : Colors.white,
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(color: isSelected ? const Color(0xFF1E3C72) : Colors.transparent, width: 2),
-                boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 4))],
+                color: isActive ? primaryColor.withOpacity(0.1) : Colors.white,
+                borderRadius: BorderRadius.circular(15),
+                border: Border.all(color: isActive ? primaryColor : Colors.transparent, width: 2),
+                boxShadow: [
+                  BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5, offset: Offset(0,2))
+                ],
               ),
-              child: Image.network(imageUrl, fit: BoxFit.contain),
+              // Menampilkan Logo
+              child: Image.network(
+                imageUrl, 
+                fit: BoxFit.contain,
+                errorBuilder: (context, error, stackTrace) {
+                  // Fallback jika gambar gagal load
+                  return Icon(Icons.directions_car, color: Colors.grey);
+                },
+              ),
             ),
             const SizedBox(height: 8),
-            Text(label, style: TextStyle(fontSize: 12, fontWeight: isSelected ? FontWeight.bold : FontWeight.w600, color: isSelected ? const Color(0xFF1E3C72) : Colors.black87)),
+            Text(label, style: TextStyle(fontWeight: isActive ? FontWeight.bold : FontWeight.normal, fontSize: 12)),
           ],
         ),
       ),
     );
   }
 
-  // Widget Kartu Mobil
-  Widget _buildCarCard(String name, String type, String rating, String price) {
+  Widget _buildCarListTitle() {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text("Mobil $selectedBrand", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+          TextButton(onPressed: () {}, child: const Text("Lihat Semua")),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildCarList() {
+    return Column(
+      children: activeCars.map((car) => _buildCarCard(car)).toList(),
+    );
+  }
+
+  Widget _buildCarCard(Map<String, String> car) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 20),
-      padding: const EdgeInsets.all(12),
+      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+      padding: const EdgeInsets.all(15),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(25),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.03), blurRadius: 20, offset: const Offset(0, 10))],
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
       ),
       child: Row(
         children: [
           Container(
-            width: 100,
-            height: 80,
+            width: 90,
+            height: 90,
             decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(20),
+              color: Colors.grey[200],
+              borderRadius: BorderRadius.circular(15),
               image: const DecorationImage(
                 image: NetworkImage('https://img.daisyui.com/images/stock/photo-1605379399642-870262d3d051.webp'),
                 fit: BoxFit.cover,
@@ -314,27 +304,45 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(type, style: const TextStyle(color: Colors.blueAccent, fontSize: 10, fontWeight: FontWeight.bold)),
-                Text(name, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(car['type'] ?? "", style: TextStyle(color: primaryColor, fontSize: 12)),
+                Text(car['name'] ?? "", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 const SizedBox(height: 5),
                 Row(
                   children: [
                     const Icon(Icons.star, color: Colors.orange, size: 14),
-                    Text(" $rating", style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                    const SizedBox(width: 4),
+                    Text(car['rating'] ?? "", style: const TextStyle(fontWeight: FontWeight.bold)),
                   ],
                 ),
                 const SizedBox(height: 5),
-                Text(price, style: const TextStyle(color: Color(0xFF1E3C72), fontWeight: FontWeight.w900, fontSize: 14)),
+                Text(car['price'] ?? "", style: TextStyle(color: primaryColor, fontWeight: FontWeight.w900)),
               ],
             ),
           ),
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(color: const Color(0xFF1E3C72), borderRadius: BorderRadius.circular(12)),
-            child: const Icon(Icons.add, color: Colors.white, size: 18),
-          ),
+          IconButton(
+            onPressed: () {},
+            icon: Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(color: primaryColor, shape: BoxShape.circle),
+              child: const Icon(Icons.add, color: Colors.white, size: 18),
+            ),
+          )
         ],
       ),
+    );
+  }
+
+  BottomNavigationBar _buildBottomNav() {
+    return BottomNavigationBar(
+      currentIndex: 0,
+      selectedItemColor: primaryColor,
+      type: BottomNavigationBarType.fixed,
+      items: const [
+        BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+        BottomNavigationBarItem(icon: Icon(Icons.key), label: "Sewa"),
+        BottomNavigationBarItem(icon: Icon(Icons.favorite), label: "Favorit"),
+        BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profil"),
+      ],
     );
   }
 }
