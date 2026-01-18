@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-// IMPORT INI WAJIB ADA DI BARIS KEDUA
+// IMPORT FILE PROFIL
 import 'profile_page.dart'; 
 
 class HomePage extends StatefulWidget {
@@ -102,12 +102,14 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // --- LOGIC Navigasi ada di sini, bukan di file profil ---
   Widget _getCurrentPageContent() {
     switch (currentIndex) {
       case 0: return _buildHomeContent();
       case 1: return _buildPlaceholderContent("Sewa Mobil");
       case 2: return _buildPlaceholderContent("Favorit");
+      
+      // Memanggil ProfilePage (Pastikan Case 3 benar)
+      case 3: return ProfilePage(); 
       
       default: return _buildHomeContent();
     }
@@ -219,7 +221,7 @@ class _HomePageState extends State<HomePage> {
             end: Alignment.bottomRight
           ),
           borderRadius: BorderRadius.circular(25),
-          boxShadow: [BoxShadow(color: primaryColor.withOpacity(0.3), blurRadius: 15, offset: Offset(0, 10))],
+          boxShadow: [BoxShadow(color: primaryColor.withOpacity(0.3), blurRadius: 15, offset: const Offset(0, 10))],
         ),
         child: Row(
           children: [
@@ -297,7 +299,7 @@ class _HomePageState extends State<HomePage> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: Offset(0, 5))],
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15, offset: const Offset(0, 5))],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -311,7 +313,7 @@ class _HomePageState extends State<HomePage> {
                   height: 120,
                   width: double.infinity,
                   fit: BoxFit.cover,
-                  errorBuilder: (c, o, s) => Container(height: 120, color: Colors.grey[200], child: Icon(Icons.error)),
+                  errorBuilder: (c, o, s) => Container(height: 120, color: Colors.grey[200], child: const Icon(Icons.error)),
                 ),
               ),
               Positioned(
