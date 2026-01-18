@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
-import 'dart:async'; // Untuk timer gambar berganti
-import 'signupage.dart'; 
-import 'home.dart'; 
+import 'dart:async';
+import 'dart:convert'; // Untuk jsonDecode
+import 'signupage.dart';
+import 'home.dart';
+import '/api_service.dart'; // Pastikan path import benar
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -11,11 +13,16 @@ class LoginPage extends StatefulWidget {
 }
 
 class _LoginPageState extends State<LoginPage> {
-  // List gambar mobil mewah dari Unsplash
+  // Controller untuk mengambil input
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
+  bool _isLoading = false; // State untuk loading
+
   final List<String> _carImages = [
-    'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1000', // Porsche
-    'https://images.unsplash.com/photo-1567818738100-41eba9e4c1f5?q=80&w=1000', // Lamborghini
-    'https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=1000', // Ferrari
+    'https://images.unsplash.com/photo-1503376780353-7e6692767b70?q=80&w=1000',
+    'https://images.unsplash.com/photo-1567818738100-41eba9e4c1f5?q=80&w=1000',
+    'https://images.unsplash.com/photo-1583121274602-3e2820c69888?q=80&w=1000',
   ];
 
   late PageController _pageController;
@@ -26,7 +33,6 @@ class _LoginPageState extends State<LoginPage> {
     super.initState();
     _pageController = PageController(initialPage: 0);
 
-    // Timer untuk mengganti gambar otomatis setiap 4 detik
     Timer.periodic(const Duration(seconds: 4), (Timer timer) {
       if (_currentPage < _carImages.length - 1) {
         _currentPage++;
@@ -47,7 +53,53 @@ class _LoginPageState extends State<LoginPage> {
   @override
   void dispose() {
     _pageController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
     super.dispose();
+  }
+
+  // --- FUNGSI LOGIN ---
+  Future<void> _handleLogin() async {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Email dan Password tidak boleh kosong")),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+
+    try {
+      final response = await ApiService.login(
+        _emailController.text,
+        _passwordController.text,
+      );
+
+      final data = jsonDecode(response.body);
+
+      if (response.statusCode == 200) {
+        // Login Berhasil
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const HomePage()),
+        );
+      } else {
+        // Login Gagal (Kredensial salah)
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data['message'] ?? "Login Gagal")),
+        );
+      }
+    } catch (e) {
+      // Error Koneksi
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Tidak dapat terhubung ke server")),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
   }
 
   @override
@@ -55,22 +107,19 @@ class _LoginPageState extends State<LoginPage> {
     return Scaffold(
       body: Stack(
         children: [
-          // 1. Background Image Carousel
+          // Background Carousel
           SizedBox(
             height: MediaQuery.of(context).size.height,
             child: PageView.builder(
               controller: _pageController,
               itemCount: _carImages.length,
               itemBuilder: (context, index) {
-                return Image.network(
-                  _carImages[index],
-                  fit: BoxFit.cover,
-                );
+                return Image.network(_carImages[index], fit: BoxFit.cover);
               },
             ),
           ),
 
-          // 2. Overlay Gelap agar konten terbaca
+          // Overlay Gelap
           Container(
             decoration: BoxDecoration(
               gradient: LinearGradient(
@@ -84,93 +133,124 @@ class _LoginPageState extends State<LoginPage> {
             ),
           ),
 
-          // 3. Konten Login
-          SingleChildScrollView(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 30),
-              child: Column(
-                children: [
-                  const SizedBox(height: 100),
-                  
-                  // LOGO BARU YANG LEBIH BAGUS
-                  _buildPremiumLogo(),
-
-                  const SizedBox(height: 60),
-
-                  // KARTU LOGIN MODERN
-                  Container(
-                    padding: const EdgeInsets.all(25),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.9),
-                      borderRadius: BorderRadius.circular(30),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withOpacity(0.2),
-                          blurRadius: 20,
-                          offset: const Offset(0, 10),
-                        )
-                      ],
-                    ),
-                    child: Column(
-                      children: [
-                        const Text(
-                          "Sign In",
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.w900,
-                            color: Color(0xFF1E3C72),
-                          ),
-                        ),
-                        const SizedBox(height: 25),
-                        _buildTextField("Email Address", Icons.email_rounded, false),
-                        const SizedBox(height: 20),
-                        _buildTextField("Password", Icons.lock_rounded, true),
-                        
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: TextButton(
-                            onPressed: () {}, 
-                            child: const Text(
-                              "Forgot Password?",
-                              style: TextStyle(color: Colors.blueGrey, fontWeight: FontWeight.w600),
-                            ),
-                          ),
-                        ),
-                        
-                        const SizedBox(height: 20),
-                        
-                        _buildButton("GO TO DRIVE", const Color(0xFF1E3C72), () {
-                          Navigator.pushReplacement(
-                            context,
-                            MaterialPageRoute(builder: (context) => const HomePage()),
-                          );
-                          }),
-                      ],
-                    ),
-                  ),
-
-                  const SizedBox(height: 30),
-                  
-                  // TOMBOL SIGN UP
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
+          // Konten Login
+          Center(
+            // Gunakan Center agar lebih rapi di web/layar besar
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 400),
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                  child: Column(
                     children: [
-                      const Text("New Member?", style: TextStyle(color: Colors.white70)),
-                      TextButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(builder: (context) => SignupPage())
-                          );
-                        }, 
-                        child: const Text(
-                          "Join Now", 
-                          style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                      const SizedBox(height: 50),
+                      _buildPremiumLogo(),
+                      const SizedBox(height: 50),
+
+                      // KARTU LOGIN
+                      Container(
+                        padding: const EdgeInsets.all(25),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withOpacity(0.95),
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.2),
+                              blurRadius: 20,
+                              offset: const Offset(0, 10),
+                            ),
+                          ],
+                        ),
+                        child: Column(
+                          children: [
+                            const Text(
+                              "Sign In",
+                              style: TextStyle(
+                                fontSize: 28,
+                                fontWeight: FontWeight.w900,
+                                color: Color(0xFF1E3C72),
+                              ),
+                            ),
+                            const SizedBox(height: 25),
+
+                            // Input Email
+                            _buildTextField(
+                              "Email Address",
+                              Icons.email_rounded,
+                              false,
+                              _emailController,
+                            ),
+                            const SizedBox(height: 20),
+
+                            // Input Password
+                            _buildTextField(
+                              "Password",
+                              Icons.lock_rounded,
+                              true,
+                              _passwordController,
+                            ),
+
+                            Align(
+                              alignment: Alignment.centerRight,
+                              child: TextButton(
+                                onPressed: () {},
+                                child: const Text(
+                                  "Forgot Password?",
+                                  style: TextStyle(
+                                    color: Colors.blueGrey,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            const SizedBox(height: 20),
+
+                            // Tombol Login dengan Loading State
+                            _isLoading
+                                ? const CircularProgressIndicator()
+                                : _buildButton(
+                                    "GO TO DRIVE",
+                                    const Color(0xFF1E3C72),
+                                    _handleLogin,
+                                  ),
+                          ],
                         ),
                       ),
+
+                      const SizedBox(height: 30),
+
+                      // TOMBOL SIGN UP
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          const Text(
+                            "New Member?",
+                            style: TextStyle(color: Colors.white70),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => const SignupPage(),
+                                ),
+                              );
+                            },
+                            child: const Text(
+                              "Join Now",
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 20),
                     ],
                   ),
-                ],
+                ),
               ),
             ),
           ),
@@ -200,21 +280,26 @@ class _LoginPageState extends State<LoginPage> {
             letterSpacing: 4,
           ),
         ),
-        Container(
-          height: 2,
-          width: 50,
-          color: Colors.orange,
-        ),
         const Text(
           "PREMIUM CAR RENTAL",
-          style: TextStyle(color: Colors.white60, fontSize: 10, letterSpacing: 2),
+          style: TextStyle(
+            color: Colors.white60,
+            fontSize: 10,
+            letterSpacing: 2,
+          ),
         ),
       ],
     );
   }
 
-  Widget _buildTextField(String label, IconData icon, bool isPassword) {
+  Widget _buildTextField(
+    String label,
+    IconData icon,
+    bool isPassword,
+    TextEditingController controller,
+  ) {
     return TextField(
+      controller: controller, // Menambahkan controller
       obscureText: isPassword,
       style: const TextStyle(fontWeight: FontWeight.w600),
       decoration: InputDecoration(
@@ -223,8 +308,8 @@ class _LoginPageState extends State<LoginPage> {
         filled: true,
         fillColor: Colors.grey[200],
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(15), 
-          borderSide: BorderSide.none
+          borderRadius: BorderRadius.circular(15),
+          borderSide: BorderSide.none,
         ),
         contentPadding: const EdgeInsets.symmetric(vertical: 18),
       ),
@@ -237,14 +322,21 @@ class _LoginPageState extends State<LoginPage> {
       height: 55,
       child: ElevatedButton(
         style: ElevatedButton.styleFrom(
-          backgroundColor: color, 
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+          backgroundColor: color,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
           elevation: 5,
         ),
         onPressed: onPressed,
         child: Text(
-          text, 
-          style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold, letterSpacing: 1.5)
+          text,
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 16,
+            fontWeight: FontWeight.bold,
+            letterSpacing: 1.5,
+          ),
         ),
       ),
     );

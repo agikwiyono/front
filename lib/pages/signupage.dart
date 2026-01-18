@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:file_picker/file_picker.dart';
-import 'loginpage.dart'; // Pastikan import ini ada untuk pindah halaman
+import 'dart:convert';
+import 'loginpage.dart';
+import '/api_service.dart'; // Pastikan path import sesuai struktur folder Anda
 
 class SignupPage extends StatefulWidget {
   const SignupPage({super.key});
@@ -10,17 +12,33 @@ class SignupPage extends StatefulWidget {
 }
 
 class _SignupPageState extends State<SignupPage> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _addressController = TextEditingController();
   final TextEditingController _ageController = TextEditingController();
-  
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _passwordController = TextEditingController();
+
   String? _ageErrorText;
   bool _isUnderage = false;
+  bool _isLoading = false;
   String _fileName = "Belum ada file terpilih";
   PlatformFile? _pickedFile;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _addressController.dispose();
+    _ageController.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
 
   Future<void> _pickFile() async {
     FilePickerResult? result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
       allowedExtensions: ['jpg', 'pdf', 'png', 'jpeg'],
+      withData: true, // PENTING: Harus true agar bytes terbaca di Web
     );
 
     if (result != null) {
@@ -33,7 +51,10 @@ class _SignupPageState extends State<SignupPage> {
 
   void _validateAge(String value) {
     if (value.isEmpty) {
-      setState(() { _ageErrorText = null; _isUnderage = false; });
+      setState(() {
+        _ageErrorText = null;
+        _isUnderage = false;
+      });
       return;
     }
     int? age = int.tryParse(value);
@@ -51,16 +72,69 @@ class _SignupPageState extends State<SignupPage> {
     });
   }
 
+  Future<void> _handleSignup() async {
+    // Validasi tambahan sebelum kirim
+    if (_pickedFile == null || _pickedFile!.bytes == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Silakan pilih file identitas terlebih dahulu"),
+        ),
+      );
+      return;
+    }
+
+    setState(() => _isLoading = true);
+    try {
+      // MEMANGGIL API SERVICE DENGAN BYTES (Web Compatible)
+      final response = await ApiService.register(
+        name: _nameController.text,
+        address: _addressController.text,
+        age: _ageController.text,
+        email: _emailController.text,
+        password: _passwordController.text,
+        fileName: _pickedFile!.name,
+        fileBytes: _pickedFile!.bytes!, // Mengirim data biner file
+      );
+
+      print("Response: ${response.body}");
+
+      if (response.statusCode == 201) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("Registrasi Berhasil!")));
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const LoginPage()),
+        );
+      } else {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("Server menolak: ${response.body}")),
+        );
+      }
+    } catch (e) {
+      print("Error Detail: $e");
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text("Gagal terhubung ke server. Cek koneksi Anda!"),
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: const Text("Create Account", style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text("Create Account"),
         backgroundColor: Colors.transparent,
         foregroundColor: const Color(0xFF1E3C72),
         elevation: 0,
-        centerTitle: true,
       ),
       body: SingleChildScrollView(
         child: Padding(
@@ -70,41 +144,45 @@ class _SignupPageState extends State<SignupPage> {
             children: [
               const Text(
                 "Personal Information",
-                style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF1E3C72)),
+                style: TextStyle(
+                  fontSize: 22,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFF1E3C72),
+                ),
               ),
-              const Text("Enter your details to start the journey", style: TextStyle(color: Colors.grey)),
-              const SizedBox(height: 25),
-
-              _buildInputField("Full Name", Icons.person_outline),
+              const SizedBox(height: 20),
+              _buildInputField("Full Name", Icons.person, _nameController),
               const SizedBox(height: 15),
-              _buildInputField("Home Address", Icons.location_on_outlined),
+              _buildInputField("Home Address", Icons.home, _addressController),
               const SizedBox(height: 15),
-              
               TextField(
                 controller: _ageController,
                 keyboardType: TextInputType.number,
                 onChanged: _validateAge,
-                decoration: _inputDecoration("Age", Icons.calendar_today_outlined, error: _ageErrorText),
+                decoration: _inputDecoration(
+                  "Age",
+                  Icons.calendar_today,
+                  error: _ageErrorText,
+                ),
               ),
               const SizedBox(height: 15),
-              
-              _buildInputField("Email Address", Icons.email_outlined),
+              _buildInputField("Email", Icons.email, _emailController),
               const SizedBox(height: 15),
-              _buildInputField("Password", Icons.lock_outline, isPassword: true),
-              
-              const SizedBox(height: 30),
-              const Divider(height: 1, thickness: 1),
-              const SizedBox(height: 30),
-
+              _buildInputField(
+                "Password",
+                Icons.lock,
+                _passwordController,
+                isPassword: true,
+              ),
+              const SizedBox(height: 25),
               const Text(
                 "Identity Verification",
-                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF1E3C72)),
+                style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
               ),
               const SizedBox(height: 15),
               _buildUploadCard(),
-
-              const SizedBox(height: 40),
-              _buildSubmitButton(), // Memanggil tombol di sini
+              const SizedBox(height: 30),
+              _buildSubmitButton(),
               const SizedBox(height: 30),
             ],
           ),
@@ -113,26 +191,32 @@ class _SignupPageState extends State<SignupPage> {
     );
   }
 
-  InputDecoration _inputDecoration(String label, IconData icon, {String? error}) {
+  InputDecoration _inputDecoration(
+    String label,
+    IconData icon, {
+    String? error,
+  }) {
     return InputDecoration(
       labelText: label,
       errorText: error,
       prefixIcon: Icon(icon, color: const Color(0xFF1E3C72)),
       filled: true,
       fillColor: Colors.white,
-      enabledBorder: OutlineInputBorder(
+      border: OutlineInputBorder(
         borderRadius: BorderRadius.circular(15),
         borderSide: BorderSide(color: Colors.grey.shade200),
-      ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(15),
-        borderSide: const BorderSide(color: Color(0xFF1E3C72), width: 1.5),
       ),
     );
   }
 
-  Widget _buildInputField(String label, IconData icon, {bool isPassword = false}) {
+  Widget _buildInputField(
+    String label,
+    IconData icon,
+    TextEditingController controller, {
+    bool isPassword = false,
+  }) {
     return TextField(
+      controller: controller,
       obscureText: isPassword,
       decoration: _inputDecoration(label, icon),
     );
@@ -143,58 +227,58 @@ class _SignupPageState extends State<SignupPage> {
       width: double.infinity,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: _pickedFile != null ? Colors.green.withOpacity(0.05) : Colors.white,
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: _pickedFile != null ? Colors.green.shade300 : Colors.grey.shade200,
-        ),
+        border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
         children: [
           Icon(
-            _pickedFile != null ? Icons.verified_user : Icons.cloud_upload_outlined,
+            _pickedFile != null ? Icons.check_circle : Icons.cloud_upload,
             size: 40,
             color: _pickedFile != null ? Colors.green : const Color(0xFF1E3C72),
           ),
           const SizedBox(height: 10),
-          Text(_fileName),
-          const SizedBox(height: 15),
+          Text(_fileName, textAlign: TextAlign.center),
+          const SizedBox(height: 10),
           OutlinedButton(
             onPressed: _pickFile,
             child: const Text("Choose File"),
-          )
+          ),
         ],
       ),
     );
   }
 
-  // Bagian tombol yang tadinya eror, sekarang masuk di dalam class
   Widget _buildSubmitButton() {
-    bool isFormValid = !_isUnderage && _pickedFile != null && _ageController.text.isNotEmpty;
+    bool isFormValid =
+        !_isUnderage &&
+        _pickedFile != null &&
+        _nameController.text.isNotEmpty &&
+        _emailController.text.isNotEmpty;
 
     return SizedBox(
       width: double.infinity,
       height: 60,
-      child: ElevatedButton(
-        onPressed: isFormValid ? () {
-          // Navigasi ke LoginPage
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("Registrasi Berhasil!")),
-          );
-          Navigator.pushReplacement(
-            context,
-            MaterialPageRoute(builder: (context) => const LoginPage()),
-          );
-        } : null,
-        style: ElevatedButton.styleFrom(
-          backgroundColor: const Color(0xFF1E3C72),
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        ),
-        child: const Text(
-          "Complete Registration",
-          style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-      ),
+      child: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : ElevatedButton(
+              onPressed: isFormValid ? _handleSignup : null,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF1E3C72),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(18),
+                ),
+              ),
+              child: const Text(
+                "Complete Registration",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
     );
   }
 }
