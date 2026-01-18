@@ -1,6 +1,9 @@
+import 'dart:io';
+import 'package:flutter/foundation.dart'; // Untuk kIsWeb
 import 'package:flutter/material.dart';
+import 'package:camera/camera.dart'; // Import XFile
 import '../api_service.dart';
-import 'face_scan_page.dart'; // Import halaman scan wajah otomatis
+import 'face_scan_page.dart';
 
 class CarDetailPage extends StatelessWidget {
   final Map<String, String> car;
@@ -61,22 +64,23 @@ class CarDetailPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 40),
 
-                  // TOMBOL SEWA DENGAN VERIFIKASI WAJAH OTOMATIS
+                  // TOMBOL SEWA DENGAN VERIFIKASI WAJAH & SIMPAN FOTO
                   SizedBox(
                     width: double.infinity,
                     height: 55,
                     child: ElevatedButton(
                       onPressed: () async {
-                        // 1. PINDAH KE HALAMAN SCAN WAJAH (OTOMATIS 4 TAHAP)
-                        final bool? isVerified = await Navigator.push<bool>(
+                        // 1. PINDAH KE HALAMAN SCAN WAJAH
+                        // Menerima dynamic karena bisa XFile (Web) atau String Path (Mobile)
+                        final dynamic result = await Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder: (context) => const FaceScanPage(),
                           ),
                         );
 
-                        // 2. JIKA VERIFIKASI SELESAI (SUKSES)
-                        if (isVerified == true) {
+                        // 2. JIKA FOTO BERHASIL DIAMBIL
+                        if (result != null) {
                           try {
                             // Tampilkan loading dialog
                             if (!context.mounted) return;
@@ -88,12 +92,30 @@ class CarDetailPage extends StatelessWidget {
                               ),
                             );
 
-                            // 3. SIMPAN DATA KE LARAVEL
+                            List<int> fileBytes;
+                            String fileName = "verification_${DateTime.now().millisecondsSinceEpoch}.jpg";
+
+                            // CARA BACA BYTES YANG AMAN UNTUK WEB & MOBILE
+                            if (kIsWeb) {
+                              // Di Web, result biasanya berupa objek XFile
+                              fileBytes = await (result as XFile).readAsBytes();
+                            } else {
+                              // Di Mobile, result bisa berupa String path atau XFile
+                              if (result is String) {
+                                fileBytes = await File(result).readAsBytes();
+                              } else {
+                                fileBytes = await (result as XFile).readAsBytes();
+                              }
+                            }
+
+                            // 3. SIMPAN DATA KE LARAVEL (Termasuk Foto)
                             final response = await ApiService.rentCar(
                               userId: userData['id'],
                               carName: car['name']!,
                               carType: car['type']!,
                               price: car['price']!,
+                              fileName: fileName,
+                              fileBytes: fileBytes,
                             );
 
                             if (!context.mounted) return;
@@ -103,31 +125,28 @@ class CarDetailPage extends StatelessWidget {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 SnackBar(
                                   content: Text(
-                                    "Verifikasi Wajah Sukses! ${car['name']} berhasil disewa.",
+                                    "Verifikasi Berhasil! ${car['name']} telah tercatat di database.",
                                   ),
                                   backgroundColor: Colors.green,
                                 ),
                               );
-                              // Kembali ke halaman Home
-                              Navigator.pop(context);
+                              Navigator.pop(context); // Kembali ke Home
                             } else {
+                              debugPrint("Server Error: ${response.body}");
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(
-                                  content: Text(
-                                    "Gagal menyimpan data ke server.",
-                                  ),
+                                  content: Text("Gagal menyimpan data ke server."),
                                   backgroundColor: Colors.red,
                                 ),
                               );
                             }
                           } catch (e) {
+                            debugPrint("Exception: $e");
                             if (!context.mounted) return;
-                            Navigator.pop(context); // Tutup loading jika error
+                            Navigator.pop(context); // Tutup loading
                             ScaffoldMessenger.of(context).showSnackBar(
                               const SnackBar(
-                                content: Text(
-                                  "Terjadi kesalahan koneksi server.",
-                                ),
+                                content: Text("Terjadi kesalahan koneksi server."),
                                 backgroundColor: Colors.red,
                               ),
                             );
@@ -137,9 +156,7 @@ class CarDetailPage extends StatelessWidget {
                           if (!context.mounted) return;
                           ScaffoldMessenger.of(context).showSnackBar(
                             const SnackBar(
-                              content: Text(
-                                "Penyewaan dibatalkan. Scan wajah wajib dilakukan.",
-                              ),
+                              content: Text("Verifikasi Wajah diperlukan untuk menyewa."),
                               backgroundColor: Colors.orange,
                             ),
                           );

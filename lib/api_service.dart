@@ -2,12 +2,8 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  // Gunakan 10.0.2.2 untuk Emulator Android
-  // Gunakan localhost atau 127.0.0.1 untuk Emulator iOS / Chrome
-  // Gunakan alamat IP Laptop Anda jika menggunakan HP Fisik
   static const String baseUrl = "http://192.168.100.192:8000/api";
 
-  // FUNGSI REGISTER (Kompatibel dengan WEB & MOBILE)
   static Future<http.Response> register({
     required String name,
     required String address,
@@ -61,6 +57,7 @@ class ApiService {
     }
   }
 
+  // FUNGSI AMBIL RIWAYAT SEWA
   static Future<http.Response> getMyRentals(int userId) async {
     try {
       final response = await http.get(
@@ -76,28 +73,40 @@ class ApiService {
     }
   }
 
-  // FUNGSI SEWA MOBIL (BARU: Untuk mencatat ke database)
+  // FUNGSI SEWA MOBIL (DIPERBARUI: Mengirim Foto Verifikasi Wajah)
   static Future<http.Response> rentCar({
     required int userId,
     required String carName,
     required String carType,
     required String price,
+    required String fileName,
+    required List<int>? fileBytes,
   }) async {
     try {
-      final response = await http.post(
+      var request = http.MultipartRequest(
+        'POST',
         Uri.parse('$baseUrl/rent-car'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: jsonEncode({
-          'user_id': userId,
-          'car_name': carName,
-          'car_type': carType,
-          'price': price,
-        }),
       );
-      return response;
+      request.headers.addAll({'Accept': 'application/json'});
+
+      request.fields['user_id'] = userId.toString();
+      request.fields['car_name'] = carName;
+      request.fields['car_type'] = carType;
+      request.fields['price'] = price;
+
+      if (fileBytes != null) {
+        // Ini bagian paling aman untuk Web & Mobile
+        request.files.add(
+          http.MultipartFile.fromBytes(
+            'verification_photo',
+            fileBytes,
+            filename: fileName,
+          ),
+        );
+      }
+
+      var streamedResponse = await request.send();
+      return await http.Response.fromStream(streamedResponse);
     } catch (e) {
       rethrow;
     }

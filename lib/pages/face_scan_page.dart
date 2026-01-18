@@ -14,9 +14,9 @@ class _FaceScanPageState extends State<FaceScanPage> {
   CameraController? _controller;
   bool _isBusy = false;
   String _instruction = "Posisikan wajah di tengah";
-  int _step = 0;
+  int _step = 0; // 0: Tengah, 1: Kanan, 2: Kiri, 3: Kedip
 
-  // PENTING: Cek apakah platform mendukung ML Kit (Hanya Android/iOS)
+  // 1. CEK PLATFORM: ML Kit hanya didukung di Android & iOS asli
   bool get _isMobile =>
       !kIsWeb &&
       (defaultTargetPlatform == TargetPlatform.android ||
@@ -27,7 +27,8 @@ class _FaceScanPageState extends State<FaceScanPage> {
   @override
   void initState() {
     super.initState();
-    // Hanya inisialisasi detector jika di mobile asli
+
+    // 2. INISIALISASI DETECTOR HANYA DI MOBILE
     if (_isMobile) {
       _faceDetector = FaceDetector(
         options: FaceDetectorOptions(
@@ -60,11 +61,13 @@ class _FaceScanPageState extends State<FaceScanPage> {
     try {
       await _controller!.initialize();
 
-      // Jalankan stream hanya di Android
+      // 3. JALANKAN STREAM HANYA DI MOBILE
       if (_isMobile) {
         _controller!.startImageStream((image) => _processCameraImage(image));
       } else {
-        setState(() => _instruction = "Klik tombol untuk verifikasi wajah");
+        setState(() {
+          _instruction = "Klik tombol di bawah untuk verifikasi";
+        });
       }
     } catch (e) {
       debugPrint("Kamera error: $e");
@@ -77,58 +80,85 @@ class _FaceScanPageState extends State<FaceScanPage> {
     if (!_isMobile || _faceDetector == null || _isBusy) return;
     _isBusy = true;
 
-    final sensorOrientation = _controller!.description.sensorOrientation;
-    final rotation = InputImageRotationValue.fromRawValue(sensorOrientation);
-    if (rotation == null) return;
+    try {
+      final sensorOrientation = _controller!.description.sensorOrientation;
+      final rotation = InputImageRotationValue.fromRawValue(sensorOrientation);
+      if (rotation == null) return;
 
-    final format = InputImageFormatValue.fromRawValue(image.format.raw);
-    if (format == null) return;
+      final format = InputImageFormatValue.fromRawValue(image.format.raw);
+      if (format == null) return;
 
-    if (image.planes.length != 1) return;
-    final plane = image.planes.first;
+      if (image.planes.length != 1) return;
+      final plane = image.planes.first;
 
-    final inputImage = InputImage.fromBytes(
-      bytes: plane.bytes,
-      metadata: InputImageMetadata(
-        size: Size(image.width.toDouble(), image.height.toDouble()),
-        rotation: rotation,
-        format: format,
-        bytesPerRow: plane.bytesPerRow,
-      ),
-    );
+      final inputImage = InputImage.fromBytes(
+        bytes: plane.bytes,
+        metadata: InputImageMetadata(
+          size: Size(image.width.toDouble(), image.height.toDouble()),
+          rotation: rotation,
+          format: format,
+          bytesPerRow: plane.bytesPerRow,
+        ),
+      );
 
-    final faces = await _faceDetector!.processImage(inputImage);
+      final faces = await _faceDetector!.processImage(inputImage);
 
-    if (faces.isNotEmpty && mounted) {
-      final face = faces.first;
-      setState(() {
-        if (_step == 0) {
-          _instruction = "Luruskan wajah ke kamera";
-          if (face.headEulerAngleY! < 10 && face.headEulerAngleY! > -10)
-            _step++;
-        } else if (_step == 1) {
-          _instruction = "Menoleh ke KANAN";
-          if (face.headEulerAngleY! < -25) _step++;
-        } else if (_step == 2) {
-          _instruction = "Menoleh ke KIRI";
-          if (face.headEulerAngleY! > 25) _step++;
-        } else if (_step == 3) {
-          _instruction = "Kedipkan mata Anda";
-          if ((face.leftEyeOpenProbability ?? 1.0) < 0.4) _finishValidation();
-        }
-      });
+      if (faces.isNotEmpty && mounted) {
+        final face = faces.first;
+        setState(() {
+          if (_step == 0) {
+            _instruction = "Luruskan wajah ke kamera";
+            if (face.headEulerAngleY! < 10 && face.headEulerAngleY! > -10)
+              _step++;
+          } else if (_step == 1) {
+            _instruction = "Menoleh ke KANAN";
+            if (face.headEulerAngleY! < -25) _step++;
+          } else if (_step == 2) {
+            _instruction = "Menoleh ke KIRI";
+            if (face.headEulerAngleY! > 25) _step++;
+          } else if (_step == 3) {
+            _instruction = "Kedipkan mata Anda";
+            if ((face.leftEyeOpenProbability ?? 1.0) < 0.4) {
+              _isBusy = true; // Hentikan deteksi sementara untuk ambil foto
+              _takePhotoAndFinish();
+            }
+          }
+        });
+      }
+    } catch (e) {
+      debugPrint("ML Kit Error: $e");
     }
     _isBusy = false;
   }
 
-  void _finishValidation() {
-    if (_isMobile) _controller?.stopImageStream();
-    Navigator.pop(context, true);
+  // FUNGSI UNTUK AMBIL FOTO OTOMATIS (AGAR TERSIMPAN DI DATABASE)
+  Future<void> _takePhotoAndFinish() async {
+    try {
+      if (_isMobile) {
+        await _controller?.stopImageStream();
+      }
+
+      final XFile image = await _controller!.takePicture();
+
+      if (mounted) {
+        // Jika Web, kirim objek XFile. Jika Mobile, kirim path String.
+        if (kIsWeb) {
+          Navigator.pop(context, image);
+        } else {
+          Navigator.pop(context, image.path);
+        }
+      }
+    } catch (e) {
+      debugPrint("Gagal mengambil foto: $e");
+      if (mounted) Navigator.pop(context, null);
+    }
   }
 
   @override
   void dispose() {
-    if (_isMobile) _controller?.stopImageStream();
+    if (_isMobile) {
+      _controller?.stopImageStream();
+    }
     _controller?.dispose();
     _faceDetector?.close();
     super.dispose();
@@ -142,19 +172,20 @@ class _FaceScanPageState extends State<FaceScanPage> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text("Verifikasi Wajah"),
+        title: const Text("Face Verification"),
         backgroundColor: const Color(0xFF1E3C72),
+        elevation: 0,
       ),
       body: Stack(
         alignment: Alignment.center,
         children: [
-          CameraPreview(_controller!),
+          Transform.scale(scale: 1.0, child: CameraPreview(_controller!)),
 
-          // Lingkaran Overlay
+          // Overlay Lingkaran
           CustomPaint(size: Size.infinite, painter: FaceOverlayPainter()),
 
           Positioned(
-            bottom: 80,
+            bottom: 60,
             child: Column(
               children: [
                 Container(
@@ -165,30 +196,40 @@ class _FaceScanPageState extends State<FaceScanPage> {
                   decoration: BoxDecoration(
                     color: Colors.white,
                     borderRadius: BorderRadius.circular(30),
+                    boxShadow: [
+                      BoxShadow(color: Colors.black26, blurRadius: 10),
+                    ],
                   ),
                   child: Text(
                     _instruction,
                     style: const TextStyle(
+                      fontSize: 16,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF1E3C72),
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
-                // Tombol ini hanya muncul di Laptop (Web)
-                if (!_isMobile)
+
+                // TOMBOL MANUAL UNTUK WEB/LAPTOP
+                if (!_isMobile) ...[
+                  const SizedBox(height: 25),
                   ElevatedButton.icon(
-                    onPressed: () async {
-                      await _controller!.takePicture();
-                      _finishValidation();
-                    },
+                    onPressed: () => _takePhotoAndFinish(),
                     icon: const Icon(Icons.camera_alt),
                     label: const Text("Ambil Foto Verifikasi"),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.white,
                       foregroundColor: Colors.black,
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 25,
+                        vertical: 12,
+                      ),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(15),
+                      ),
                     ),
                   ),
+                ],
               ],
             ),
           ),

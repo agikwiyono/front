@@ -11,8 +11,10 @@ class RentHistoryPage extends StatefulWidget {
 }
 
 class _RentHistoryPageState extends State<RentHistoryPage> {
-  List rentals = [];
+  // 1. Inisialisasi list kosong agar tidak null/undefined
+  List<dynamic> rentals = [];
   bool isLoading = true;
+  String errorMessage = "";
 
   @override
   void initState() {
@@ -21,16 +23,37 @@ class _RentHistoryPageState extends State<RentHistoryPage> {
   }
 
   Future<void> _fetchData() async {
+    if (!mounted) return;
+    setState(() {
+      isLoading = true;
+      errorMessage = "";
+    });
+
     try {
       final response = await ApiService.getMyRentals(widget.userData['id']);
+
       if (response.statusCode == 200) {
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+
         setState(() {
-          rentals = jsonDecode(response.body)['data'];
+          // 2. Gunakan null-check (?) dan default value ([]) jika key 'data' tidak ditemukan
+          rentals = responseData['data'] ?? [];
+          isLoading = false;
+        });
+      } else {
+        setState(() {
+          errorMessage = "Gagal mengambil data (${response.statusCode})";
           isLoading = false;
         });
       }
     } catch (e) {
-      setState(() => isLoading = false);
+      debugPrint("Fetch Data Error: $e");
+      if (mounted) {
+        setState(() {
+          errorMessage = "Terjadi kesalahan koneksi ke server.";
+          isLoading = false;
+        });
+      }
     }
   }
 
@@ -46,41 +69,72 @@ class _RentHistoryPageState extends State<RentHistoryPage> {
         backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
+        actions: [
+          IconButton(
+            onPressed: _fetchData,
+            icon: const Icon(Icons.refresh, color: Color(0xFF1E3C72)),
+          ),
+        ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
-          : rentals.isEmpty
+          : errorMessage.isNotEmpty
+          ? _buildErrorState()
+          : (rentals
+                .isEmpty) // 3. Pastikan rentals sudah diinisialisasi [] di atas
           ? _buildEmptyState()
           : RefreshIndicator(
               onRefresh: _fetchData,
               child: ListView.builder(
                 padding: const EdgeInsets.all(20),
+                // 4. Selalu gunakan ScrollPhysics agar RefreshIndicator bisa ditarik meski list sedikit
+                physics: const AlwaysScrollableScrollPhysics(),
                 itemCount: rentals.length,
                 itemBuilder: (context, index) {
                   final item = rentals[index];
-                  return _buildRentalCard(item);
+                  // Pastikan item tidak null sebelum dirender
+                  return item != null
+                      ? _buildRentalCard(item)
+                      : const SizedBox();
                 },
               ),
             ),
     );
   }
 
-  Widget _buildEmptyState() {
+  Widget _buildErrorState() {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.directions_car_filled_outlined,
-            size: 80,
-            color: Colors.grey[300],
-          ),
-          const SizedBox(height: 15),
-          const Text(
-            "Belum ada mobil yang disewa",
-            style: TextStyle(color: Colors.grey, fontSize: 16),
-          ),
+          const Icon(Icons.error_outline, size: 60, color: Colors.red),
+          const SizedBox(height: 10),
+          Text(errorMessage),
+          TextButton(onPressed: _fetchData, child: const Text("Coba Lagi")),
         ],
+      ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.directions_car_filled_outlined,
+              size: 80,
+              color: Colors.grey[300],
+            ),
+            const SizedBox(height: 15),
+            const Text(
+              "Belum ada mobil yang disewa",
+              style: TextStyle(color: Colors.grey, fontSize: 16),
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -112,19 +166,19 @@ class _RentHistoryPageState extends State<RentHistoryPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  item['car_name'],
+                  item['car_name'] ?? "Mobil",
                   style: const TextStyle(
                     fontWeight: FontWeight.bold,
                     fontSize: 16,
                   ),
                 ),
                 Text(
-                  item['car_type'],
+                  item['car_type'] ?? "Tipe",
                   style: const TextStyle(color: Colors.grey, fontSize: 13),
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  item['price'],
+                  item['price'] ?? "Rp 0",
                   style: const TextStyle(
                     color: Color(0xFF1E3C72),
                     fontWeight: FontWeight.bold,
@@ -142,7 +196,7 @@ class _RentHistoryPageState extends State<RentHistoryPage> {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(
-              item['status'].toString().toUpperCase(),
+              (item['status'] ?? 'pending').toString().toUpperCase(),
               style: TextStyle(
                 color: item['status'] == 'active'
                     ? Colors.green
