@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 class ProfilePage extends StatelessWidget {
+  // Variabel untuk menerima data user dari MainPage
   final Map<String, dynamic>? userData;
 
   const ProfilePage({super.key, this.userData});
@@ -9,15 +10,16 @@ class ProfilePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    // 1. Ambil data dari Map (sesuai nama kolom di database MySQL kamu)
     final String userName = userData?['name'] ?? "Nama Pengguna";
     final String userEmail = userData?['email'] ?? "email@example.com";
     final String? profilePhoto = userData?['profile_photo'];
 
     return SingleChildScrollView(
-      physics: const BouncingScrollPhysics(), // Menambah kenyamanan scroll
+      physics: const BouncingScrollPhysics(),
       child: Column(
         children: [
-          // Header Profil
+          // Header Profil dengan Background Gradient
           Stack(
             clipBehavior: Clip.none,
             alignment: Alignment.center,
@@ -37,6 +39,7 @@ class ProfilePage extends StatelessWidget {
                   ),
                 ),
               ),
+              // Tombol Edit/Kamera
               Positioned(
                 top: 40,
                 right: 20,
@@ -53,6 +56,7 @@ class ProfilePage extends StatelessWidget {
                   ),
                 ),
               ),
+              // Avatar Dinamis
               Positioned(
                 bottom: -50,
                 child: Container(
@@ -69,6 +73,7 @@ class ProfilePage extends StatelessWidget {
                   child: CircleAvatar(
                     radius: 55,
                     backgroundColor: Colors.grey[200],
+                    // Mengecek apakah profilePhoto ada di database
                     backgroundImage:
                         profilePhoto != null && profilePhoto.isNotEmpty
                         ? NetworkImage(profilePhoto)
@@ -83,7 +88,7 @@ class ProfilePage extends StatelessWidget {
 
           const SizedBox(height: 65),
 
-          // Nama & Email (Menggunakan Padding agar tidak overflow)
+          // Tampilan Nama & Email Dinamis
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: Column(
@@ -92,9 +97,8 @@ class ProfilePage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Flexible(
-                      // Menghindari overflow jika nama terlalu panjang
                       child: Text(
-                        userName,
+                        userName, // MENAMPILKAN NAMA DARI DATABASE
                         style: const TextStyle(
                           fontSize: 22,
                           fontWeight: FontWeight.bold,
@@ -109,7 +113,7 @@ class ProfilePage extends StatelessWidget {
                 ),
                 const SizedBox(height: 5),
                 Text(
-                  userEmail,
+                  userEmail, // MENAMPILKAN EMAIL DARI DATABASE
                   style: const TextStyle(color: Colors.grey),
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -119,108 +123,34 @@ class ProfilePage extends StatelessWidget {
 
           const SizedBox(height: 25),
 
-          // Statistik (Menggunakan Row yang dibatasi width agar tidak overflow)
+          // Statistik User
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: LayoutBuilder(
-              builder: (context, constraints) {
-                return Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildStatCard(
-                      context,
-                      "Riwayat",
-                      "12",
-                      Icons.history,
-                      Colors.orangeAccent,
-                    ),
-                    _buildStatCard(
-                      context,
-                      "Poin",
-                      "450",
-                      Icons.stars,
-                      Colors.yellow,
-                    ),
-                    _buildStatCard(
-                      context,
-                      "Dompet",
-                      "Rp 500rb",
-                      Icons.account_balance_wallet,
-                      Colors.green,
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-
-          const SizedBox(height: 25),
-
-          // Banner Premium
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Container(
-              padding: const EdgeInsets.all(15),
-              decoration: BoxDecoration(
-                color: primaryColor,
-                borderRadius: BorderRadius.circular(20),
-                boxShadow: [
-                  BoxShadow(
-                    color: primaryColor.withOpacity(0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 5),
-                  ),
-                ],
-              ),
-              child: Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 8,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          child: const Text(
-                            "PREMIUM",
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        const Text(
-                          "Nikmati diskon\nlebih banyak!",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 16,
-                            fontWeight: FontWeight.bold,
-                            height: 1.2,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(15),
-                    child: Image.network(
-                      'https://images.unsplash.com/photo-1503376763036-066120622c74?auto=format&fit=crop&w=200&q=80',
-                      width: 80, // Ukuran disesuaikan agar tidak overflow
-                      height: 70,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
-                ],
-              ),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                _buildStatCard(
+                  context,
+                  "Riwayat",
+                  "12",
+                  Icons.history,
+                  Colors.orangeAccent,
+                ),
+                _buildStatCard(
+                  context,
+                  "Poin",
+                  "450",
+                  Icons.stars,
+                  Colors.yellow,
+                ),
+                _buildStatCard(
+                  context,
+                  "Dompet",
+                  "Rp 500rb",
+                  Icons.account_balance_wallet,
+                  Colors.green,
+                ),
+              ],
             ),
           ),
 
@@ -237,7 +167,6 @@ class ProfilePage extends StatelessWidget {
             notificationCount: 2,
           ),
           _buildMenuItem(Icons.payment, "Metode Pembayaran", () {}),
-          _buildMenuItem(Icons.help_outline, "Bantuan & Pusat Dukungan", () {}),
           _buildMenuItem(Icons.settings, "Pengaturan Akun", () {}),
 
           const SizedBox(height: 20),
@@ -249,6 +178,7 @@ class ProfilePage extends StatelessWidget {
               width: double.infinity,
               child: ElevatedButton.icon(
                 onPressed: () {
+                  // Kembali ke halaman Login dan hapus semua history navigasi
                   Navigator.of(
                     context,
                   ).pushNamedAndRemoveUntil('/', (route) => false);
@@ -260,24 +190,21 @@ class ProfilePage extends StatelessWidget {
                 ),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.red[400],
-                  foregroundColor: Colors.white,
                   padding: const EdgeInsets.symmetric(vertical: 15),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(15),
                   ),
-                  elevation: 2,
                 ),
               ),
             ),
           ),
-
           const SizedBox(height: 40),
         ],
       ),
     );
   }
 
-  // --- FIX ERROR: Hapus 'const' di depan Icon karena menggunakan variabel primaryColor ---
+  // Widget Helper untuk Kotak Statistik
   Widget _buildStatCard(
     BuildContext context,
     String title,
@@ -287,17 +214,13 @@ class ProfilePage extends StatelessWidget {
   ) {
     double width = MediaQuery.of(context).size.width;
     return Container(
-      width: (width - 60) / 3, // Membagi rata agar tidak overflow
+      width: (width - 60) / 3,
       padding: const EdgeInsets.symmetric(vertical: 15, horizontal: 5),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 8,
-            offset: const Offset(0, 4),
-          ),
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 8),
         ],
         border: Border.all(color: Colors.grey[100]!),
       ),
@@ -315,19 +238,14 @@ class ProfilePage extends StatelessWidget {
           Text(
             value,
             style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-            overflow: TextOverflow.ellipsis,
           ),
-          const SizedBox(height: 2),
-          Text(
-            title,
-            style: const TextStyle(fontSize: 9, color: Colors.grey),
-            overflow: TextOverflow.ellipsis,
-          ),
+          Text(title, style: const TextStyle(fontSize: 10, color: Colors.grey)),
         ],
       ),
     );
   }
 
+  // Widget Helper untuk Item Menu
   Widget _buildMenuItem(
     IconData icon,
     String title,
@@ -338,29 +256,19 @@ class ProfilePage extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       child: Card(
         elevation: 0,
-        color: Colors.white,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
         child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(
-            horizontal: 20,
-            vertical: 8,
-          ),
           leading: Container(
             padding: const EdgeInsets.all(10),
             decoration: const BoxDecoration(
               color: Color(0xFFF0F4F8),
               shape: BoxShape.circle,
             ),
-            // PERBAIKAN: Hapus 'const' di sini
             child: Icon(icon, color: primaryColor, size: 22),
           ),
           title: Text(
             title,
-            style: const TextStyle(
-              fontWeight: FontWeight.w600,
-              fontSize: 15,
-              color: Colors.black87,
-            ),
+            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
           ),
           trailing: notificationCount != null
               ? Container(
@@ -374,11 +282,7 @@ class ProfilePage extends StatelessWidget {
                   ),
                   child: Text(
                     notificationCount.toString(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 12,
-                    ),
+                    style: const TextStyle(color: Colors.white, fontSize: 12),
                   ),
                 )
               : const Icon(Icons.chevron_right, color: Colors.grey),

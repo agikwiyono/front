@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rentcar/pages/main_page.dart';
 import 'dart:async';
 import 'dart:convert'; // Untuk jsonDecode
 import 'signupage.dart';
@@ -59,43 +60,39 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   // --- FUNGSI LOGIN ---
+  // Cari fungsi _handleLogin di loginpage.dart
   Future<void> _handleLogin() async {
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Email dan Password tidak boleh kosong")),
-      );
-      return;
-    }
-
     setState(() => _isLoading = true);
-
     try {
       final response = await ApiService.login(
         _emailController.text,
         _passwordController.text,
       );
 
-      final data = jsonDecode(response.body);
-
       if (response.statusCode == 200) {
-        // Login Berhasil
+        final Map<String, dynamic> responseData = jsonDecode(response.body);
+
+        // Mengambil data user yang dikirim Laravel
+        final userData = responseData['user'];
+
         if (!mounted) return;
+
+        // Pindah ke MainPage sambil membawa data userData
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => const HomePage()),
+          MaterialPageRoute(builder: (context) => MainPage(userData: userData)),
         );
       } else {
-        // Login Gagal (Kredensial salah)
+        // Notifikasi jika login gagal
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data['message'] ?? "Login Gagal")),
+          const SnackBar(content: Text("Email atau Password Salah!")),
         );
       }
     } catch (e) {
-      // Error Koneksi
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Tidak dapat terhubung ke server")),
+        const SnackBar(content: Text("Gagal terhubung ke server")),
       );
     } finally {
       if (mounted) setState(() => _isLoading = false);
