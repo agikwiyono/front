@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+// IMPORT INI WAJIB ADA DI BARIS KEDUA
+import 'profile_page.dart'; 
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -8,11 +10,10 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  // Kita biarkan 'final' agar mudah dipahami
   final Color primaryColor = const Color(0xFF1E3C72);
+  int currentIndex = 0; 
   String selectedBrand = "Toyota";
 
-  // --- DATA MOBIL ---
   final List<Map<String, String>> toyotaCars = [
     {"name": "Rush 2023", "type": "SUV", "rating": "4.8", "price": "Rp 600rb/hari", "image": "https://images.unsplash.com/photo-1550355291-bbee04a92027?auto=format&fit=crop&w=500&q=80"},
     {"name": "Fortuner 2022", "type": "SUV", "rating": "4.9", "price": "Rp 1.2jt/hari", "image": "https://images.unsplash.com/photo-1533473359331-0135ef1b58bf?auto=format&fit=crop&w=500&q=80"},
@@ -48,7 +49,6 @@ class _HomePageState extends State<HomePage> {
     {"name": "Santa Fe", "type": "SUV", "rating": "4.8", "price": "Rp 1.2jt/hari", "image": "https://images.unsplash.com/photo-1550355291-bbee04a92027?auto=format&fit=crop&w=500&q=80"},
   ];
 
-  // Get List Mobil Aktif
   List<Map<String, String>> get activeCars {
     switch (selectedBrand) {
       case "Toyota": return toyotaCars;
@@ -60,7 +60,6 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
-  // Logic Mengelompokkan Mobil berdasarkan Jenis (SUV, MPV, dll)
   Map<String, List<Map<String, String>>> get groupedCars {
     Map<String, List<Map<String, String>>> grouped = {};
     for (var car in activeCars) {
@@ -79,38 +78,23 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void _onBottomNavTap(int index) {
+    setState(() {
+      currentIndex = index;
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[800], // Background luar gelap
-      appBar: _buildAppBar(),
+      backgroundColor: Colors.grey[800],
+      appBar: (currentIndex == 0) ? _buildAppBar() : null,
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 480),
           child: Container(
             color: const Color(0xFFF8FAFC),
-            child: SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  _buildSearch(),
-                  _buildPromo(),
-                  const SizedBox(height: 30),
-                  
-                  _BrandSelector(
-                    selectedBrand: selectedBrand,
-                    onBrandSelected: _handleBrandTap,
-                  ),
-                  
-                  const SizedBox(height: 25),
-                  
-                  // --- TAMPILAN LIST MOBIL BARU (DIKELOMPOKKAN) ---
-                  _buildCarCategoryList(),
-                  const SizedBox(height: 80), // Spacer untuk bottom nav
-                ],
-              ),
-            ),
+            child: _getCurrentPageContent(), 
           ),
         ),
       ),
@@ -118,7 +102,47 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // --- WIDGET UTAMA ---
+  // --- LOGIC Navigasi ada di sini, bukan di file profil ---
+  Widget _getCurrentPageContent() {
+    switch (currentIndex) {
+      case 0: return _buildHomeContent();
+      case 1: return _buildPlaceholderContent("Sewa Mobil");
+      case 2: return _buildPlaceholderContent("Favorit");
+      
+      default: return _buildHomeContent();
+    }
+  }
+
+  Widget _buildHomeContent() {
+    return SingleChildScrollView(
+      physics: const BouncingScrollPhysics(),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildSearch(),
+          _buildPromo(),
+          const SizedBox(height: 30),
+          _BrandSelector(selectedBrand: selectedBrand, onBrandSelected: _handleBrandTap),
+          const SizedBox(height: 25),
+          _buildCarCategoryList(),
+          const SizedBox(height: 80),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPlaceholderContent(String title) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.construction, size: 80, color: Colors.grey[400]),
+          const SizedBox(height: 20),
+          Text("Halaman $title\nSedang dalam pengembangan", textAlign: TextAlign.center, style: TextStyle(color: Colors.grey[600], fontSize: 16)),
+        ],
+      ),
+    );
+  }
 
   AppBar _buildAppBar() {
     return AppBar(
@@ -214,7 +238,6 @@ class _HomePageState extends State<HomePage> {
                   Container(
                     padding: EdgeInsets.symmetric(horizontal: 15, vertical: 8),
                     decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(20)),
-                    // PERBAIKAN: Kata 'const' dihapus di bawah ini karena memakai primaryColor
                     child: Text("Klaim Sekarang", style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold, fontSize: 12)),
                   ),
                 ],
@@ -227,10 +250,8 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // --- BAGIAN BARU: LIST KELOMPOK MOBIL ---
   Widget _buildCarCategoryList() {
     final grouped = groupedCars;
-    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: grouped.entries.map((entry) {
@@ -251,9 +272,8 @@ class _HomePageState extends State<HomePage> {
               ),
             ),
             const SizedBox(height: 15),
-            // Horizontal Scroll List untuk mobil di dalam kategori
             SizedBox(
-              height: 240, // Tinggi kartu
+              height: 240,
               child: ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -270,10 +290,9 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  // --- KARTU MOBIL VERTIKAL MODERN ---
   Widget _buildModernCarCard(Map<String, String> car) {
     return Container(
-      width: 180, // Lebar kartu
+      width: 180,
       margin: const EdgeInsets.only(right: 15),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -283,7 +302,6 @@ class _HomePageState extends State<HomePage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Bagian Gambar
           Stack(
             children: [
               ClipRRect(
@@ -296,7 +314,6 @@ class _HomePageState extends State<HomePage> {
                   errorBuilder: (c, o, s) => Container(height: 120, color: Colors.grey[200], child: Icon(Icons.error)),
                 ),
               ),
-              // Label Rating di atas gambar
               Positioned(
                 top: 10,
                 right: 10,
@@ -314,7 +331,6 @@ class _HomePageState extends State<HomePage> {
               ),
             ],
           ),
-          // Bagian Info
           Padding(
             padding: const EdgeInsets.all(12),
             child: Column(
@@ -324,7 +340,6 @@ class _HomePageState extends State<HomePage> {
                 const SizedBox(height: 4),
                 Text(car['price']!, style: TextStyle(color: primaryColor, fontWeight: FontWeight.w800, fontSize: 13)),
                 const SizedBox(height: 10),
-                // Tombol Add
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -350,7 +365,8 @@ class _HomePageState extends State<HomePage> {
 
   BottomNavigationBar _buildBottomNav() {
     return BottomNavigationBar(
-      currentIndex: 0,
+      currentIndex: currentIndex, 
+      onTap: _onBottomNavTap, 
       selectedItemColor: primaryColor,
       type: BottomNavigationBarType.fixed,
       elevation: 10,
@@ -364,7 +380,6 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-// --- WIDGET BRAND SELECTOR ---
 class _BrandSelector extends StatelessWidget {
   final String selectedBrand;
   final Function(String) onBrandSelected;
