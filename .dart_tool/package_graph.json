@@ -7,9 +7,11 @@
       "name": "rentcar",
       "version": "1.0.0+1",
       "dependencies": [
+        "camera",
         "cupertino_icons",
         "file_picker",
         "flutter",
+        "google_ml_kit",
         "http",
         "path",
         "path_provider"
@@ -42,6 +44,39 @@
         "stream_channel",
         "test_api",
         "vector_math"
+      ]
+    },
+    {
+      "name": "google_ml_kit",
+      "version": "0.20.0",
+      "dependencies": [
+        "flutter",
+        "google_mlkit_barcode_scanning",
+        "google_mlkit_commons",
+        "google_mlkit_digital_ink_recognition",
+        "google_mlkit_entity_extraction",
+        "google_mlkit_face_detection",
+        "google_mlkit_face_mesh_detection",
+        "google_mlkit_image_labeling",
+        "google_mlkit_language_id",
+        "google_mlkit_object_detection",
+        "google_mlkit_pose_detection",
+        "google_mlkit_selfie_segmentation",
+        "google_mlkit_smart_reply",
+        "google_mlkit_text_recognition",
+        "google_mlkit_translation"
+      ]
+    },
+    {
+      "name": "camera",
+      "version": "0.11.2+1",
+      "dependencies": [
+        "camera_android_camerax",
+        "camera_avfoundation",
+        "camera_platform_interface",
+        "camera_web",
+        "flutter",
+        "flutter_plugin_android_lifecycle"
       ]
     },
     {
@@ -189,6 +224,163 @@
       ]
     },
     {
+      "name": "google_mlkit_smart_reply",
+      "version": "0.13.0",
+      "dependencies": [
+        "flutter"
+      ]
+    },
+    {
+      "name": "google_mlkit_translation",
+      "version": "0.13.0",
+      "dependencies": [
+        "flutter",
+        "google_mlkit_commons"
+      ]
+    },
+    {
+      "name": "google_mlkit_language_id",
+      "version": "0.13.0",
+      "dependencies": [
+        "flutter"
+      ]
+    },
+    {
+      "name": "google_mlkit_entity_extraction",
+      "version": "0.15.1",
+      "dependencies": [
+        "flutter",
+        "google_mlkit_commons"
+      ]
+    },
+    {
+      "name": "google_mlkit_text_recognition",
+      "version": "0.15.0",
+      "dependencies": [
+        "flutter",
+        "google_mlkit_commons"
+      ]
+    },
+    {
+      "name": "google_mlkit_selfie_segmentation",
+      "version": "0.10.0",
+      "dependencies": [
+        "flutter",
+        "google_mlkit_commons"
+      ]
+    },
+    {
+      "name": "google_mlkit_pose_detection",
+      "version": "0.14.0",
+      "dependencies": [
+        "flutter",
+        "google_mlkit_commons"
+      ]
+    },
+    {
+      "name": "google_mlkit_object_detection",
+      "version": "0.15.0",
+      "dependencies": [
+        "flutter",
+        "google_mlkit_commons"
+      ]
+    },
+    {
+      "name": "google_mlkit_image_labeling",
+      "version": "0.14.1",
+      "dependencies": [
+        "flutter",
+        "google_mlkit_commons"
+      ]
+    },
+    {
+      "name": "google_mlkit_face_mesh_detection",
+      "version": "0.4.1",
+      "dependencies": [
+        "flutter",
+        "google_mlkit_commons"
+      ]
+    },
+    {
+      "name": "google_mlkit_face_detection",
+      "version": "0.13.1",
+      "dependencies": [
+        "flutter",
+        "google_mlkit_commons"
+      ]
+    },
+    {
+      "name": "google_mlkit_digital_ink_recognition",
+      "version": "0.14.1",
+      "dependencies": [
+        "flutter",
+        "google_mlkit_commons"
+      ]
+    },
+    {
+      "name": "google_mlkit_barcode_scanning",
+      "version": "0.14.1",
+      "dependencies": [
+        "flutter",
+        "google_mlkit_commons"
+      ]
+    },
+    {
+      "name": "google_mlkit_commons",
+      "version": "0.11.0",
+      "dependencies": [
+        "flutter"
+      ]
+    },
+    {
+      "name": "flutter_plugin_android_lifecycle",
+      "version": "2.0.31",
+      "dependencies": [
+        "flutter"
+      ]
+    },
+    {
+      "name": "camera_web",
+      "version": "0.3.5+3",
+      "dependencies": [
+        "camera_platform_interface",
+        "flutter",
+        "flutter_web_plugins",
+        "stream_transform",
+        "web"
+      ]
+    },
+    {
+      "name": "camera_platform_interface",
+      "version": "2.12.0",
+      "dependencies": [
+        "cross_file",
+        "flutter",
+        "plugin_platform_interface",
+        "stream_transform"
+      ]
+    },
+    {
+      "name": "camera_avfoundation",
+      "version": "0.9.21+2",
+      "dependencies": [
+        "camera_platform_interface",
+        "flutter",
+        "stream_transform"
+      ]
+    },
+    {
+      "name": "camera_android_camerax",
+      "version": "0.6.23+1",
+      "dependencies": [
+        "async",
+        "camera_platform_interface",
+        "flutter",
+        "meta",
+        "stream_transform"
+      ]
+    },
+    {
       "name": "web",
       "version": "1.1.1",
       "dependencies": []
@@ -295,13 +487,6 @@
       ]
     },
     {
-      "name": "flutter_plugin_android_lifecycle",
-      "version": "2.0.31",
-      "dependencies": [
-        "flutter"
-      ]
-    },
-    {
       "name": "flutter_web_plugins",
       "version": "0.0.0",
       "dependencies": [
@@ -373,6 +558,11 @@
         "source_span",
         "string_scanner"
       ]
+    },
+    {
+      "name": "stream_transform",
+      "version": "2.1.1",
+      "dependencies": []
     },
     {
       "name": "typed_data",

@@ -7,15 +7,15 @@ class ApiService {
   // Gunakan alamat IP Laptop Anda jika menggunakan HP Fisik
   static const String baseUrl = "http://192.168.100.192:8000/api";
 
-  // FUNGSI REGISTER TERBARU (Kompatibel dengan WEB & MOBILE)
+  // FUNGSI REGISTER (Kompatibel dengan WEB & MOBILE)
   static Future<http.Response> register({
     required String name,
     required String address,
     required String age,
     required String email,
     required String password,
-    required String fileName,    // Gunakan nama file dari file picker
-    required List<int>? fileBytes, // Gunakan bytes agar jalan di Web
+    required String fileName,
+    required List<int>? fileBytes,
   }) async {
     try {
       var request = http.MultipartRequest(
@@ -23,38 +23,28 @@ class ApiService {
         Uri.parse('$baseUrl/register'),
       );
 
-      // Header agar Laravel merespon dengan JSON
       request.headers.addAll({'Accept': 'application/json'});
 
-      // Menambahkan data teks
       request.fields['name'] = name;
       request.fields['address'] = address;
       request.fields['age'] = age;
       request.fields['email'] = email;
       request.fields['password'] = password;
 
-      // Menambahkan file gambar menggunakan bytes agar aman untuk Web
       if (fileBytes != null && fileBytes.isNotEmpty) {
         request.files.add(
-          http.MultipartFile.fromBytes(
-            'image', // Harus sesuai dengan $request->file('image') di Laravel
-            fileBytes,
-            filename: fileName,
-          ),
+          http.MultipartFile.fromBytes('image', fileBytes, filename: fileName),
         );
       }
 
-      // Mengirim request
       var streamedResponse = await request.send();
-
-      // Mengubah StreamedResponse menjadi Response biasa
       return await http.Response.fromStream(streamedResponse);
     } catch (e) {
       rethrow;
     }
   }
 
-  // Fungsi untuk Login
+  // FUNGSI LOGIN
   static Future<http.Response> login(String email, String password) async {
     try {
       final response = await http.post(
@@ -64,6 +54,48 @@ class ApiService {
           'Accept': 'application/json',
         },
         body: jsonEncode({'email': email, 'password': password}),
+      );
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  static Future<http.Response> getMyRentals(int userId) async {
+    try {
+      final response = await http.get(
+        Uri.parse('$baseUrl/rentals/$userId'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+      );
+      return response;
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  // FUNGSI SEWA MOBIL (BARU: Untuk mencatat ke database)
+  static Future<http.Response> rentCar({
+    required int userId,
+    required String carName,
+    required String carType,
+    required String price,
+  }) async {
+    try {
+      final response = await http.post(
+        Uri.parse('$baseUrl/rent-car'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'user_id': userId,
+          'car_name': carName,
+          'car_type': carType,
+          'price': price,
+        }),
       );
       return response;
     } catch (e) {

@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-// IMPORT FILE BARU
 import 'brand_selector.dart';
+import 'car_detail_page.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  // TAMBAHKAN: Properti untuk menerima userData dari MainPage
+  final Map<String, dynamic>? userData;
+
+  const HomePage({super.key, this.userData});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -11,10 +14,8 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final Color primaryColor = const Color(0xFF1E3C72);
-  // Hapus currentIndex di sini karena sudah diatur di MainPage
   String selectedBrand = "Toyota";
 
-  // --- DATA MOBIL (Tetap sama seperti sebelumnya) ---
   final List<Map<String, String>> toyotaCars = [
     {
       "name": "Rush 2023",
@@ -58,16 +59,8 @@ class _HomePageState extends State<HomePage> {
     },
   ];
 
-  // ... (Data Honda, Mitsubishi, Suzuki, Hyundai tetap sama seperti kode sebelumnya) ...
-
   List<Map<String, String>> get activeCars {
-    switch (selectedBrand) {
-      case "Toyota":
-        return toyotaCars;
-      // Tambahkan case brand lain di sini jika data sudah dimasukkan kembali
-      default:
-        return toyotaCars;
-    }
+    return toyotaCars;
   }
 
   Map<String, List<Map<String, String>>> get groupedCars {
@@ -90,7 +83,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    // PERBAIKAN: Gunakan Scaffold minimalis tanpa BottomNavigationBar
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: _buildAppBar(),
@@ -109,22 +101,18 @@ class _HomePageState extends State<HomePage> {
             ),
             const SizedBox(height: 25),
             _buildCarCategoryList(),
-            const SizedBox(height: 30), // Ukuran disesuaikan
+            const SizedBox(height: 30),
           ],
         ),
       ),
     );
   }
 
-  // --- UI COMPONENTS ---
   AppBar _buildAppBar() {
     return AppBar(
       backgroundColor: Colors.white,
       elevation: 0,
-      leading: IconButton(
-        icon: const Icon(Icons.menu, color: Colors.black),
-        onPressed: () {},
-      ),
+      leading: const Icon(Icons.menu, color: Colors.black),
       title: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -148,18 +136,19 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
-      actions: const [
+      actions: [
         Padding(
-          padding: EdgeInsets.only(right: 15),
+          padding: const EdgeInsets.only(right: 15),
           child: CircleAvatar(
-            backgroundImage: NetworkImage('https://i.pravatar.cc/150?img=32'),
+            // Menampilkan foto profil dari database atau default
+            backgroundImage: widget.userData?['profile_photo'] != null
+                ? NetworkImage(widget.userData!['profile_photo'])
+                : const NetworkImage('https://i.pravatar.cc/150?img=32'),
           ),
         ),
       ],
     );
   }
-
-  // ... (Gunakan fungsi _buildSearch, _buildPromo, _buildCarCategoryList, dan _buildPremiumCarCard yang sama seperti sebelumnya) ...
 
   Widget _buildSearch() {
     return Padding(
@@ -182,10 +171,7 @@ class _HomePageState extends State<HomePage> {
                 decoration: InputDecoration(
                   hintText: "Cari mobil impian...",
                   prefixIcon: Icon(Icons.search, color: primaryColor),
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide.none,
-                  ),
+                  border: InputBorder.none,
                   contentPadding: const EdgeInsets.symmetric(vertical: 15),
                 ),
               ),
@@ -214,25 +200,16 @@ class _HomePageState extends State<HomePage> {
         decoration: BoxDecoration(
           gradient: LinearGradient(
             colors: [primaryColor, primaryColor.withOpacity(0.6)],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
           ),
           borderRadius: BorderRadius.circular(25),
-          boxShadow: [
-            BoxShadow(
-              color: primaryColor.withOpacity(0.3),
-              blurRadius: 15,
-              offset: const Offset(0, 10),
-            ),
-          ],
         ),
         child: Row(
           children: [
             Expanded(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
+                children: const [
+                  Text(
                     "Diskon 20%\nKhusus Mahasiswa",
                     style: TextStyle(
                       color: Colors.white,
@@ -241,23 +218,12 @@ class _HomePageState extends State<HomePage> {
                       height: 1.2,
                     ),
                   ),
-                  const SizedBox(height: 10),
-                  Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 15,
-                      vertical: 8,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: Text(
-                      "Klaim Sekarang",
-                      style: TextStyle(
-                        color: primaryColor,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
+                  SizedBox(height: 10),
+                  Text(
+                    "Klaim Sekarang",
+                    style: TextStyle(
+                      color: Colors.white70,
+                      decoration: TextDecoration.underline,
                     ),
                   ),
                 ],
@@ -309,58 +275,118 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildPremiumCarCard(Map<String, String> car) {
-    return Container(
-      width: 200,
-      margin: const EdgeInsets.only(right: 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          ClipRRect(
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            child: Image.network(
-              car['image']!,
-              height: 140,
-              width: double.infinity,
-              fit: BoxFit.cover,
+    return GestureDetector(
+      onTap: () {
+        // PERBAIKAN: Mengirim car DAN userData ke CarDetailPage
+        // widget.userData diambil dari parameter HomePage
+        if (widget.userData != null) {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) =>
+                  CarDetailPage(car: car, userData: widget.userData!),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.all(15),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  car['name']!,
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                  ),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-                Text(
-                  car['price']!,
-                  style: TextStyle(
-                    color: primaryColor,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 15,
-                  ),
-                ),
-              ],
+          );
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text(
+                "Data pengguna tidak ditemukan, silakan login ulang.",
+              ),
             ),
-          ),
-        ],
+          );
+        }
+      },
+      child: Container(
+        width: 200,
+        margin: const EdgeInsets.only(right: 20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.04),
+              blurRadius: 20,
+              offset: const Offset(0, 8),
+            ),
+          ],
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Hero(
+              tag: car['name']!,
+              child: ClipRRect(
+                borderRadius: const BorderRadius.vertical(
+                  top: Radius.circular(20),
+                ),
+                child: Image.network(
+                  car['image']!,
+                  height: 140,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                ),
+              ),
+            ),
+            Padding(
+              padding: const EdgeInsets.all(15),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    car['name']!,
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 15,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 5),
+                  Text(
+                    car['price']!,
+                    style: TextStyle(
+                      color: primaryColor,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 15,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          const Icon(
+                            Icons.star,
+                            color: Colors.orange,
+                            size: 14,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            car['rating']!,
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.grey,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const Text(
+                        "Sewa >",
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.grey,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
